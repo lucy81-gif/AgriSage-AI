@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.venv*/
+venv/
+ENV/
+
+# Environment and local runtime data
+.env
+.env.local
+runtime/
+runtime/*.db
+*.db
+*.sqlite
+*.sqlite3
+
+# Test and tooling output
+.pytest_cache/
+.coverage
+htmlcov/
+coverage/
+.mypy_cache/
+.ruff_cache/
+
+# Node/Next.js build and package artifacts
+node_modules/
+.next/
+out/
+dist/
+build/
+.turbo/
+.vercel/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Logs
+*.log
+logs/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
