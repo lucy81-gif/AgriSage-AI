@@ -27,6 +27,7 @@ Updated 2026-10-14 after evaluation run `EVALRUN-DEAEA454B3` and the local produ
 - [x] Seeded farm records persist across a Railway API restart (26 farms before and after)
 - [x] FastAPI backend deployed at https://api-production-9585.up.railway.app
 - [x] Vercel production deployment created, configured for the Railway API, and set to use the `frontend` Git root
+- [x] GitHub-triggered Vercel production build completed successfully from the `frontend` root
 - [ ] Vercel public access enabled; SSO currently protects all `.vercel.app` URLs
 - [ ] Full public analysis run completed with the hosted open-weight model
 - [ ] Public MCP trace and tool logs verified
@@ -34,7 +35,7 @@ Updated 2026-10-14 after evaluation run `EVALRUN-DEAEA454B3` and the local produ
 - [x] README updated with actual production URLs and current access status
 - [x] `DEMO_SCRIPT.md` created
 - [ ] Demo recording completed
-- [ ] Final deployment documentation committed and pushed
+- [x] Final deployment documentation committed and pushed
 - [ ] Competition submission form completed
 
 ## Previously recorded checks
