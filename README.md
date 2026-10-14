@@ -168,9 +168,14 @@ The evaluation runner persists each case and three repeated normal-workflow runs
 
 ## Deployment
 
-The API container is defined in [backend/Dockerfile](backend/Dockerfile), and the frontend uses `NEXT_PUBLIC_API_URL` at build time. Set `DATABASE_URL` to the managed PostgreSQL connection string, `CORS_ORIGINS` to the exact Vercel origin, and configure a hosted open-weight model through `MODEL_PROVIDER=openai_compatible`, `MODEL_BASE_URL`, `MODEL_NAME`, and `MODEL_API_KEY`. Never point production model configuration at a local-only URL.
+The API uses Railway PostgreSQL through `DATABASE_URL`; the frontend receives the API origin through `NEXT_PUBLIC_API_URL` at build time. The Railway API currently builds from the GitHub `main` branch using Railpack's Python detection. The repository also includes [backend/Dockerfile](backend/Dockerfile) for Docker-based deployments. Configure a hosted open-weight model through `MODEL_PROVIDER=openai_compatible`, `MODEL_BASE_URL`, `MODEL_NAME`, and `MODEL_API_KEY`. Never point production model configuration at a local-only URL.
 
-**Deployment status:** not deployed. No frontend or backend production URL is available yet. The local EVAL-014 run completed with `ollama/qwen3:1.7b` on 2026-10-14. Public deployment still needs a hosted model endpoint and the production URL values. See [DEPLOYMENT.md](DEPLOYMENT.md) for the deployment configuration and checks.
+**Production URLs (2026-10-14):**
+
+- Frontend: [https://frontend-lucy81-gifs-projects.vercel.app](https://frontend-lucy81-gifs-projects.vercel.app) — the deployment is ready, but Vercel SSO currently requires authentication, so public access is pending.
+- Backend: [https://api-production-9585.up.railway.app](https://api-production-9585.up.railway.app) — `/api/health` returned HTTP 200 with PostgreSQL connected. After a Railway restart, the API still returned all 26 seeded farms.
+
+The frontend's production API URL and Railway CORS origins are configured. A browser CORS preflight from the Vercel production origin returned HTTP 200. Full public analysis and advisory persistence verification are pending a hosted model endpoint; the production advisory, trace, and evaluation lists are currently empty. The local EVAL-014 run completed with `ollama/qwen3:1.7b` on 2026-10-14. See [DEPLOYMENT.md](DEPLOYMENT.md) for current checks and remaining setup.
 
 ## Limitations
 

@@ -23,17 +23,18 @@ Updated 2026-10-14 after evaluation run `EVALRUN-DEAEA454B3` and the local produ
 
 - [x] Backend test suite passed locally
 - [x] Frontend production build passed on 2026-10-14
-- [x] Railway deployment config added (`railway.toml`); API container binds the injected `PORT`
-- [x] Railway project and PostgreSQL service created; persistence across an API restart remains to verify
-- [ ] FastAPI backend deployed and public health endpoint verified
-- [ ] Vercel frontend deployed and connected to the Railway API
+- [x] Railway API and PostgreSQL deployed; `/api/health` reports a connected database
+- [x] Seeded farm records persist across a Railway API restart (26 farms before and after)
+- [x] FastAPI backend deployed at https://api-production-9585.up.railway.app
+- [x] Vercel production deployment created and configured for the Railway API
+- [ ] Vercel public access enabled; SSO currently protects all `.vercel.app` URLs
 - [ ] Full public analysis run completed with the hosted open-weight model
 - [ ] Public MCP trace and tool logs verified
-- [ ] Advisory approved by the authorized named officer and persisted after refresh/restart
-- [ ] README updated with actual production URLs
+- [ ] Advisory created, approved by the authorized named officer, and persisted after refresh/restart
+- [x] README updated with actual production URLs and current access status
 - [x] `DEMO_SCRIPT.md` created
 - [ ] Demo recording completed
-- [ ] Git changes committed and pushed (GitHub authentication is still required)
+- [ ] Final deployment documentation committed and pushed
 - [ ] Competition submission form completed
 
 ## Previously recorded checks
