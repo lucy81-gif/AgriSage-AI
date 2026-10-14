@@ -170,12 +170,12 @@ The evaluation runner persists each case and three repeated normal-workflow runs
 
 The API container is defined in [backend/Dockerfile](backend/Dockerfile), and the frontend uses `NEXT_PUBLIC_API_URL` at build time. Set `DATABASE_URL` to the managed PostgreSQL connection string, `CORS_ORIGINS` to the exact Vercel origin, and configure a hosted open-weight model through `MODEL_PROVIDER=openai_compatible`, `MODEL_BASE_URL`, `MODEL_NAME`, and `MODEL_API_KEY`. Never point production model configuration at a local-only URL.
 
-**Deployment status:** not deployed. No frontend or backend production URL is available yet. The deployable setup and exact environment values are documented in [DEPLOYMENT.md](DEPLOYMENT.md).
+**Deployment status:** not deployed. No frontend or backend production URL is available yet. The local EVAL-014 run completed with `ollama/qwen3:1.7b` on 2026-10-14. Public deployment still needs a hosted model endpoint and the production URL values. See [DEPLOYMENT.md](DEPLOYMENT.md) for the deployment configuration and checks.
 
 ## Limitations
 
 - All included farm, pest, and climate data is synthetic and intended for demonstration, not operational farming decisions.
-- A successful full workflow requires an available configured open-weight model. The current local environment did not respond at the Ollama endpoint when this repository was audited; see the actual evaluation result in `EVALS.md`.
+- A successful full workflow requires an available configured open-weight model. The local EVAL-014 evaluation completed with Ollama `qwen3:1.7b`; a public Railway deployment needs a hosted endpoint because its `localhost` address cannot reach the development machine.
 - Public Fetch content is optional context and can fail independently.
 - The production dependency audit is clean. The full npm audit reports five high findings in the ESLint development dependency chain through `braces`; the [upstream advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) lists no patched version as of 2026-10-13.
 - Officer names are recorded for audit and are not authenticated identities; production use needs extension-office identity controls.
@@ -209,7 +209,7 @@ docs/           Architecture diagram and supporting material
 | MCP action tool with human approval gate | COMPLETE | `draft_advisory`; persisted `PENDING_APPROVAL` |
 | Borrowed MCP server | COMPLETE | Official Fetch MCP call returned FAO page content in EVAL-001; failure logging verified in EVAL-011 |
 | Open-source orchestration | COMPLETE | LangGraph state graph in `backend/app/agents/graph.py` |
-| Full open-weight model workflow | BLOCKED until a real model run completes | `MODEL_PROVIDER`, `MODEL_NAME`; EVAL-014 in EVALS.md |
+| Full open-weight model workflow | COMPLETE locally; public hosting pending | EVAL-014 used `ollama/qwen3:1.7b`; see `EVALS.md` |
 | Tool-call inputs, outputs, timestamps, and failures | COMPLETE | `ToolCallLog` and Agent Trace |
 | Named human approval, edit, and rejection | COMPLETE | `HumanApproval` and advisory API routes |
 | Evidence-backed recommendations | COMPLETE | Risk assessment evidence chain and farm detail |

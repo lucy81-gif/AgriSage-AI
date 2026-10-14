@@ -6,7 +6,7 @@ from datetime import date, datetime
 from typing import Any
 from uuid import uuid4
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 
 from backend.app.agents.graph import run_analysis_workflow
 from backend.app.core.config import get_settings
@@ -16,6 +16,7 @@ from backend.app.models import (
     AdvisoryRecord,
     EvaluationResult,
     EvaluationRun,
+    FollowUpTask,
     HumanApproval,
     RiskAssessment,
     ToolCallLog,
@@ -156,12 +157,64 @@ def _run_workflow_case(db, case: dict[str, Any], evaluation_run_id: str) -> dict
     except Exception as exc:
         rows = _tool_rows(db, run_id)
         is_model_failure = "MODEL_UNAVAILABLE" in str(exc)
-        actual = (
-            f"Workflow stopped with MODEL_UNAVAILABLE for {get_model_provider().provider_name}/"
-            f"{get_model_provider().model_name}; no replacement model or rule output was used."
-            if is_model_failure
-            else "Workflow stopped after an unhandled dependency error."
-        )
+        if case.get("real_model"):
+            try:
+                provider = get_model_provider()
+                provider_name = provider.provider_name
+                model_name = provider.model_name
+            except Exception:
+                settings = get_settings()
+                provider_name = settings.model_provider
+                model_name = settings.model_name
+            run = db.get(WorkflowRun, run_id)
+            advisory_count = db.scalar(
+                select(func.count()).select_from(AdvisoryRecord).where(
+                    AdvisoryRecord.workflow_run_id == run_id
+                )
+            ) or 0
+            follow_up_count = db.scalar(
+                select(func.count()).select_from(FollowUpTask).where(
+                    FollowUpTask.workflow_run_id == run_id
+                )
+            ) or 0
+            required_tools = {
+                "get_plot_context",
+                "get_climate_signals",
+                "get_pest_signals",
+                "draft_advisory",
+            }
+            called_tools = {row.tool_name for row in rows}
+            failed_checks = [
+                name
+                for name, succeeded in {
+                    "workflow_run_exists": run is not None,
+                    "workflow_completed": bool(run and run.status == "COMPLETE"),
+                    "advisory_created": advisory_count > 0,
+                    "actual_provider_is_real": provider_name != TEST_PROVIDER.provider_name,
+                    "actual_model_is_real": model_name != TEST_PROVIDER.model_name,
+                    "stored_provider_matches_actual": bool(run and run.model_provider == provider_name),
+                    "stored_model_matches_actual": bool(run and run.model_name == model_name),
+                    "required_tools_called": required_tools.issubset(called_tools),
+                }.items()
+                if not succeeded
+            ]
+            actual = (
+                f"EVAL-014 failed checks={', '.join(failed_checks) or 'workflow_exception'} "
+                f"(raised {type(exc).__name__}: {exc}); "
+                f"workflow_status={run.status if run else 'MISSING'}; "
+                f"provider_name={provider_name}; model_name={model_name}; "
+                f"stored_workflow_provider={run.model_provider if run else 'MISSING'}; "
+                f"stored_workflow_model={run.model_name if run else 'MISSING'}; "
+                f"tools_called={', '.join(row.tool_name for row in rows)}; "
+                f"advisories_created={advisory_count}; follow-ups={follow_up_count}."
+            )
+        else:
+            actual = (
+                f"Workflow stopped with MODEL_UNAVAILABLE for {get_model_provider().provider_name}/"
+                f"{get_model_provider().model_name}; no replacement model or rule output was used."
+                if is_model_failure
+                else "Workflow stopped after an unhandled dependency error."
+            )
         passed = False
         return _result(
             case,
@@ -189,6 +242,7 @@ def _run_workflow_case(db, case: dict[str, Any], evaluation_run_id: str) -> dict
     farm_id = case.get("farm_id")
     assessment = assessments.get(farm_id) if farm_id else None
     passed = False
+    real_model_diagnostics: str | None = None
     if case["task_id"] == "EVAL-001":
         called = {(row.server_name, row.tool_name) for row in rows}
         fetch_succeeded = any(
@@ -269,6 +323,41 @@ def _run_workflow_case(db, case: dict[str, Any], evaluation_run_id: str) -> dict
                 and updated.rejection_reason == "Evidence needs a second field check."
                 and {item.decision for item in decisions} == {"EDITED", "REJECTED"}
             )
+    elif case["task_id"] == "EVAL-014" and case.get("real_model"):
+        provider = state.get("model_provider") or get_model_provider()
+        run = db.get(WorkflowRun, run_id)
+        persisted_advisories = db.scalars(
+            select(AdvisoryRecord).where(AdvisoryRecord.workflow_run_id == run_id)
+        ).all()
+        follow_up_count = db.scalar(
+            select(func.count()).select_from(FollowUpTask).where(
+                FollowUpTask.workflow_run_id == run_id
+            )
+        ) or 0
+        required_tools = {
+            "get_plot_context",
+            "get_climate_signals",
+            "get_pest_signals",
+            "draft_advisory",
+        }
+        checks = {
+            "workflow_run_exists": run is not None,
+            "workflow_completed": bool(run and run.status == "COMPLETE"),
+            "advisory_persisted": bool(persisted_advisories),
+            "actual_provider_is_real": provider.provider_name != TEST_PROVIDER.provider_name,
+            "actual_model_is_real": provider.model_name != TEST_PROVIDER.model_name,
+            "stored_provider_matches_actual": bool(run and run.model_provider == provider.provider_name),
+            "stored_model_matches_actual": bool(run and run.model_name == provider.model_name),
+            "required_tools_called": required_tools.issubset(set(tools)),
+        }
+        passed = all(checks.values())
+        failed_checks = [name for name, passed_check in checks.items() if not passed_check]
+        real_model_diagnostics = (
+            f"stored_provider/model={run.model_provider if run else 'MISSING'}/"
+            f"{run.model_name if run else 'MISSING'}; "
+            f"workflow_status={run.status if run else 'MISSING'}; "
+            f"checks={'all passed' if passed else ', '.join(failed_checks)}"
+        )
 
     actual = (
         f"Risk={assessment['risk_level']}; tools={', '.join(tools)}; "
@@ -280,6 +369,26 @@ def _run_workflow_case(db, case: dict[str, Any], evaluation_run_id: str) -> dict
         actual = "Named officer approval and timestamp were persisted." if passed else "Named officer approval was not fully persisted."
     if case.get("edit_reject_flow"):
         actual = "Edited text, original draft, named officer, and rejection reason were persisted." if passed else "Edit/reject persistence did not match the expected record."
+    if case.get("real_model"):
+        provider = state.get("model_provider") or get_model_provider()
+        persisted_advisory_count = db.scalar(
+            select(func.count()).select_from(AdvisoryRecord).where(
+                AdvisoryRecord.workflow_run_id == run_id
+            )
+        ) or 0
+        follow_up_count = db.scalar(
+            select(func.count()).select_from(FollowUpTask).where(
+                FollowUpTask.workflow_run_id == run_id
+            )
+        ) or 0
+        check_summary = real_model_diagnostics or (
+            "checks=all passed" if passed else "checks were not evaluated"
+        )
+        actual = (
+            f"provider/model={provider.provider_name}/{provider.model_name}; "
+            f"tools={', '.join(tools)}; advisories={persisted_advisory_count}; "
+            f"follow-ups={follow_up_count}; {check_summary}."
+        )
     return _result(
         case,
         actual,
