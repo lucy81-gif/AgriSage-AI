@@ -26,7 +26,7 @@ Updated 2026-10-14 after evaluation run `EVALRUN-DEAEA454B3` and the local produ
 - [x] Railway API and PostgreSQL deployed; `/api/health` reports a connected database
 - [x] Seeded farm records persist across a Railway API restart (26 farms before and after)
 - [x] FastAPI backend deployed at https://api-production-9585.up.railway.app
-- [x] Vercel production deployment created and configured for the Railway API
+- [x] Vercel production deployment created, configured for the Railway API, and set to use the `frontend` Git root
 - [ ] Vercel public access enabled; SSO currently protects all `.vercel.app` URLs
 - [ ] Full public analysis run completed with the hosted open-weight model
 - [ ] Public MCP trace and tool logs verified

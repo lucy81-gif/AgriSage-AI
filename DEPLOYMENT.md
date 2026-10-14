@@ -4,7 +4,7 @@
 
 The Railway `AgriSage AI` project and `Postgres` service are running. The FastAPI service is connected to GitHub `main`, uses the Railway PostgreSQL connection reference, and is available at `https://api-production-9585.up.railway.app`. Its public `/api/health` endpoint returned HTTP 200 with `database: connected`. After restarting the API, `/api/farms` still returned 26 seeded farm records.
 
-The Vercel production deployment is ready at `https://frontend-lucy81-gifs-projects.vercel.app`, with `NEXT_PUBLIC_API_URL` set to the Railway API. The Railway CORS preflight accepts the Vercel origin. Vercel SSO protection currently blocks unauthenticated visitors from `.vercel.app` domains, so the frontend is not publicly accessible yet. A project-wide protection change needs explicit approval; a user-owned custom domain is the other path.
+The Vercel production deployment is ready at `https://frontend-lucy81-gifs-projects.vercel.app`, with `NEXT_PUBLIC_API_URL` set to the Railway API and the GitHub root directory set to `frontend`. The Railway CORS preflight accepts the Vercel origin. Vercel SSO protection currently blocks unauthenticated visitors from `.vercel.app` domains, so the frontend is not publicly accessible yet. A project-wide protection change needs explicit approval; a user-owned custom domain is the other path.
 
 The production advisory, workflow trace, and evaluation lists are empty. The Railway service still needs a hosted open-weight model endpoint and secret before it can run analysis. The local frontend build and backend test suite passed on 2026-10-14.
 

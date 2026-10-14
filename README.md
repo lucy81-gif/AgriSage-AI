@@ -168,7 +168,7 @@ The evaluation runner persists each case and three repeated normal-workflow runs
 
 ## Deployment
 
-The API uses Railway PostgreSQL through `DATABASE_URL`; the frontend receives the API origin through `NEXT_PUBLIC_API_URL` at build time. The Railway API currently builds from the GitHub `main` branch using Railpack's Python detection. The repository also includes [backend/Dockerfile](backend/Dockerfile) for Docker-based deployments. Configure a hosted open-weight model through `MODEL_PROVIDER=openai_compatible`, `MODEL_BASE_URL`, `MODEL_NAME`, and `MODEL_API_KEY`. Never point production model configuration at a local-only URL.
+The API uses Railway PostgreSQL through `DATABASE_URL`; the frontend receives the API origin through `NEXT_PUBLIC_API_URL` at build time. The Railway API currently builds from the GitHub `main` branch using Railpack's Python detection. The Vercel project is connected to the same repository with `frontend` as its root directory. The repository also includes [backend/Dockerfile](backend/Dockerfile) for Docker-based deployments. Configure a hosted open-weight model through `MODEL_PROVIDER=openai_compatible`, `MODEL_BASE_URL`, `MODEL_NAME`, and `MODEL_API_KEY`. Never point production model configuration at a local-only URL.
 
 **Production URLs (2026-10-14):**
 
